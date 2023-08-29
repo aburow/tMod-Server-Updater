@@ -11,109 +11,155 @@
 import requests
 import wget
 import os
-# import sys
 import shutil
 
-'''
-I use the following variables to cache the answers that I get from various calls. Technically, the application can
-be written to use live calls as needed but I was trying to be more efficient and prevent getting download blocks
-during the development cycle.
-'''
+"""I use the following variables to cache the answers that I get from various 
+calls. Technically, the application can be written to use live calls as 
+needed but I was trying to be more efficient and prevent getting download 
+blocks during the development cycle."""
 newVersion = ""
 oldVersion = ""
 
-def get_latest_version():
+# globals :|
+
+IMAGE_URL = "https://github.com/tModLoader/tModLoader/releases/latest"
+LOG_FILE = "/root/tModLoader/tModLoader-Logs/server.log"
+
+
+def get_latest_version() -> str:
+    """Returns the latest version of tmodloader from the official Github
+        releases page.
+
+    Calls are pointed to a redirection page at Github, a URL is passed back
+    and the end of the URL gives the latest version number.
     """
-    This call is pointed at a redirection page at github. It is a cheaty way of getting the latest version of code
-    if the authors have setup for this. A URL is passed back that I use to get the latest version number an return.
+    r = requests.get(IMAGE_URL)
+    return r.url.split("/v")[-1]  # last part is the version
+
+
+def get_installed_version() -> str:
+    """Returns the currently installed version of tmodloader.
+
+    This function looks at the first line of the logfile and extracts the
+    version number.
     """
-    image_url = "https://github.com/tModLoader/tModLoader/releases/latest"
-    r = requests.get(image_url)
-    return r.url.split("/v")[-1]     # last part is the version
+    with open(LOG_FILE, "r") as f:
+        first_line = f.readline().strip("\n").split("+")
+        version_is = first_line[1].split("|")
+    return version_is[0]  # first part is the version
 
-def get_installed_version():
-    '''
-    I wasn't able to find a good way to locate the current running version on the server. This little hack looks at
-    first line of the logfile and extracts the tModLoader version. I return the version number.
-    '''
-    log_file = "/root/tModLoader/tModLoader-Logs/server.log"
-    with open(log_file, 'r') as f:
-        first_line = f.readline().strip('\n').split('+')
-        version_is = first_line[1].split('|')
-    f.close()
-    return version_is[0]            # first part is the version
 
-def version_compare(n,o):
-    '''
-    A dumb version compare. I put this into the application in stubby code and haven't removed it because I don't know
-    if I really need it or not if I find better ways to deal with this in the future. The function takes in two
-    variables and returns one of two values. It's not currently doing anything of great value.
-    '''
-    if (n != o):
-        return "New Release Available"
-    else:
-        return "No New Release"
+def version_compare(new_version: str, old_version: str) -> bool:
+    """Takes in two strings and compares them to see if they are different,
+        if they're different True is returned.
+    """
+    if new_version != old_version:
+        return True  # There is a new release
+    return False  # No new release
 
-def backup_execs(o):
-    '''
-    Do a full backup of the current running server executables in-situ. The backup can be restored directly back into
-    the original directory or copied to another server for deployment. The return at the moment is nonsense.
-    '''
-    result = shutil.make_archive(f"./tMod-execs-{o}","gztar","/root/","tModLoader")
-    result = shutil.move(f"./tMod-execs-{o}.tar.gz","./backup")
+
+def backup_execs(id_name: str) -> ...:
+    """Does a full backup of the current running server executables in-situ.
+
+    The backup can be restored directly back into the original directory or
+    copied to another server for deployment.
+
+    Parameters:
+        id_name (str): The identifier you want to use to differentiate
+            between multiple backups, e.g. the version number.
+
+    Returns:
+        Nothing intelligible at the moment. ahem I mean, not implemented.
+    """
+    shutil.make_archive(f"./tMod-execs-{id_name}", "gztar",
+                        "/root/", "tModLoader")
+    result = shutil.move(f"./tMod-execs-{id_name}.tar.gz",
+                         "./backup")
     return result
 
-def backup_datafiles(o):
-    '''
-    Do a full backup of the current servers data files, including maps and plugins. The return at the moment is
-    nonsense.
-    '''
-    result = shutil.make_archive(f"./tMod-datafiles-{o}","gztar","/root/",".local/share/Terraria")
-    result = shutil.move(f"./tMod-datafiles-{o}.tar.gz","./backup")
+
+def backup_datafiles(id_name: str) -> ...:
+    """Does a full backup of the current servers data files, including maps and
+        plugins.
+
+    Parameters:
+        id_name (str): The identifier you want to use to differentiate
+            between multiple backups, e.g. the version number.
+
+    Returns:
+        Nothing intelligible at the moment. ahem I mean, not implemented.
+    """
+    shutil.make_archive(f"./tMod-datafiles-{id_name}",
+                        "gztar", "/root/",
+                        ".local/share/Terraria")
+    result = shutil.move(f"./tMod-datafiles-{id_name}.tar.gz",
+                         "./backup")
     return result
 
-def move_current_dir(o):
-    result = os.rename("tModLoader",f"tModLoader-v{o}")
+
+def move_current_dir(version_number: str) -> None:
+    """Renames the "tModLoader" directory to the format "tModLoader-v{
+        version_number}"
+
+    Parameters:
+        version_number (str): The version number.
+    """
+    result = os.rename("tModLoader", f"tModLoader-v{version_number}")
     return result
 
-def make_new_dir():
+
+def make_new_dir() -> None:
+    """Makes a new "tModLoader" directory.
+    """
     result = os.mkdir("tModLoader")
     return result
 
-def get_latest_zip(n):
-    '''
-    Gets the requested version of the tModLoader installation files
-    '''
-    image_file = f"https://github.com/tModLoader/tModLoader/releases/download/v{n}/tModLoader.zip"
-    result = wget.download(image_file,out=f"tModLoader/tModLoader-v{n}.zip")
+
+def get_latest_zip(version: str) -> str:
+    """Gets the requested version of the tModLoader installation files.
+
+    Parameters:
+        version (str): The version that you want to download.
+    """
+    image_file = ("https://github.com/tModLoader/tModLoader/releases/download/"
+                  f"v{version}/tModLoader.zip")
+    result = wget.download(image_file,
+                           out=f"tModLoader/tModLoader-v{version}.zip")
     return result
 
-def server_setup(n):
-    '''
-    Unpack the server distribution zip
-    '''
-    image_file = f"tModLoader/tModLoader-v{n}.zip"
+
+def server_setup(version: str):
+    """Unpack the server distribution zip.
+
+    Precondition:
+        The version is already downloaded and in the expected location.
+
+    Parameters:
+        version (str): The version you are unpacking.
+    """
+    image_file = f"tModLoader/tModLoader-v{version}.zip"
     extract_dir = "/root/tModLoader"
     result = shutil.unpack_archive(image_file, extract_dir)
     return result
 
+
 def deploy_startfiles():
-    '''
-    Redeploy config and startup shell files to new directory structure
-    '''
+    """Redeploy config and startup shell files to new directory structure.
+    """
     image_file = "tModBootScripts.tgz"
     result = shutil.unpack_archive(image_file)
     return result
 
+
 # main-loop
 if __name__ == '__main__':
-    print('Start Check')
+    print("Start Check")
     oldVersion = get_installed_version()
     newVersion = get_latest_version()
     print(f"Latest Release    : {newVersion}")
     print(f"Installed Release : {oldVersion}")
-    print(f"Update Status     : {version_compare(newVersion,oldVersion)}")
-    if ( newVersion != oldVersion ):
+    print(f"Update Status     : {version_compare(newVersion, oldVersion)}")
+    if newVersion != oldVersion:
         print(f"Backup Executables: {backup_execs(oldVersion)}")
         print(f"Backup Data Files : {backup_datafiles(oldVersion)}")
         print(f"Move Current Inst.: {move_current_dir(oldVersion)}")
@@ -121,4 +167,4 @@ if __name__ == '__main__':
         print(f"Retrieve File     : {get_latest_zip(newVersion)}")
         print(f"Unzip New Server  : {server_setup(newVersion)}")
         print(f"Deploy Start Files: {deploy_startfiles()}")
-        print(f"You can now reboot")
+        print("You can now reboot")
