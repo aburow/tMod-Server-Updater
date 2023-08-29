@@ -49,15 +49,11 @@ def get_installed_version() -> str:
     return version_is[0]  # first part is the version
 
 
-def version_compare(n, o) -> bool:
+def version_compare(new_version: str, old_version: str) -> bool:
+    """Takes in two strings and compares them to see if they are different,
+        if they're different True is returned.
     """
-    A dumb version compare. I put this into the application in stubby code
-    and haven't removed it because I don't know if I really need it or not if
-    I find better ways to deal with this in the future. The function takes in
-    two variables and returns one of two values. It's not currently doing
-    anything of great value.
-    """
-    if n != o:
+    if new_version != old_version:
         return True  # There is a new release
     return False  # No new release
 
