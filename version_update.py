@@ -12,6 +12,7 @@ import requests
 import wget
 import os
 import shutil
+import json
 
 """I use the following variables to cache the answers that I get from various 
 calls. Technically, the application can be written to use live calls as 
@@ -43,6 +44,16 @@ def get_installed_version() -> str:
     This function looks at the first line of the logfile and extracts the
     version number.
     """
+    try:
+        with open("version_update.json", "r") as vu:
+            jvu = json.load(vu)
+            version = jvu.get("version")
+            if version is not None:
+                return version
+
+    except FileNotFoundError:
+        print("version_update.json not found")
+
     with open(LOG_FILE, "r") as f:
         first_line = f.readline().strip("\n").split("+")
         version_is = first_line[1].split("|")
