@@ -74,9 +74,9 @@ Script to backup, deploy new version of tMod on existing installation
       additional scripts for administrative tasks.
 
       Exit Codes
-       0: Exit without error | no upgrade available | upgrade successful
+       0: Exit without error | no upgrade available 
        2: No parameters or valid commands
       42: New version available
       69: File move and copy errors detected
-      88: All other errors
+      88: Upgrade complete
 
