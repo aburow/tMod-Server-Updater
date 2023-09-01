@@ -73,7 +73,6 @@ Install and Run the code:
       Version update will provide exit codes so that it can be included in automations and
       additional scripts to for administrative tasks.
 
-      
 Exit Codes:
        0: Exit without error | no upgrade available | upgrade successful
        2: No parameters or valid commands
