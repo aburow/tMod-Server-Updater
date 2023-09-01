@@ -1,11 +1,11 @@
 #!/usr/bin/python3
-# Automatically update tmod server v0.2 
+# Automatically update tmod server v0.2
 # 1 September 2023
 #
 # Anthony Burow - apburow at hotmail dot com
 # Alex Burow
 #
-# 
+#
 # License: GPL3
 #
 # This program has a little bit of error checking
@@ -18,6 +18,7 @@ import json
 import os
 import sys
 import shutil
+from datetime import datetime
 
 
 class VersionUpdate:
@@ -73,7 +74,7 @@ class VersionUpdate:
                     return version
 
         except FileNotFoundError:
-            print("version_update.json not found")
+            cprint("version_update.json not found")
 
         with open(self.log_file, "r") as f:
             first_line = f.readline().strip("\n").split("+")
@@ -171,10 +172,10 @@ class VersionUpdate:
                     file, f"{file}.orig"
                 )
             except (shutil.Error, FileNotFoundError) as e:
-                print(f"Error: {e}")
+                cprint(f"Error: {e}")
                 quit(69)
             except Exception as e:
-                print(f"Unexpected error: {e}")
+                cprint(f"Unexpected error: {e}")
                 quit(69)
 
         for file in self.copy_config_files:
@@ -183,10 +184,10 @@ class VersionUpdate:
                     file, f"{self.root_dir}/tModLoader"
                 )
             except (shutil.Error, PermissionError) as e:
-                print(f"Error: {e}")
+                cprint(f"Error: {e}")
                 quit(69)
             except Exception as e:
-                print(f"Unexpected error: {e}")
+                cprint(f"Unexpected error: {e}")
                 quit(69)
 
         self.installed_version = self.latest_version
@@ -200,35 +201,42 @@ class VersionUpdate:
         quit(42)
 
     def main(self) -> None:
-        print(f"\nLatest Release    : {self.latest_version}")
-        print(f"Installed Release : {self.installed_version}")
+        cprint(f"\nLatest Release    : {self.latest_version}")
+        cprint(f"Installed Release : {self.installed_version}")
         check = self.latest_version != self.installed_version
-        print(f"Update Available  : {check}")
+        cprint(f"Update Available  : {check}")
         if check:
-            print("Starting upgrade...")
-            print("Backup Executables: ", end="")
+            cprint("Starting upgrade...")
+            cprint("Backup Executables: ", end="")
             sys.stdout.flush()
-            print(self.backup_execs())
-            print("Backup Data Files : ", end="")
+            cprint(self.backup_execs())
+            cprint("Backup Data Files : ", end="")
             sys.stdout.flush()
-            print(self.backup_datafiles())
-            print("Move Current Inst.: ", end="")
+            cprint(self.backup_datafiles())
+            cprint("Move Current Inst.: ", end="")
             sys.stdout.flush()
-            print(self.move_current_dir())
-            print("Prepare Directory :", end="")
+            cprint(self.move_current_dir())
+            cprint("Prepare Directory :", end="")
             sys.stdout.flush()
-            print(self.make_new_dir())
-            print("Retrieve File     : ", end="")
+            cprint(self.make_new_dir())
+            cprint("Retrieve File     : ", end="")
             sys.stdout.flush()
-            print(self.get_latest_zip())
-            print("Unzip New Server  : ", end="")
+            cprint(self.get_latest_zip())
+            cprint("Unzip New Server  : ", end="")
             sys.stdout.flush()
-            print(self.server_setup())
-            print("Deploy Start Files: ", end="")
+            cprint(self.server_setup())
+            cprint("Deploy Start Files: ", end="")
             sys.stdout.flush()
-            print(self.deploy_startfiles())
-            print("You can now reboot")
+            cprint(self.deploy_startfiles())
+            cprint("You can now reboot")
         print()
+
+def cprint(message: ..., end: str = None) -> None:
+    if end is None:
+        print(f"{datetime.now()}: {message}")
+    else:
+        print(f"{datetime.now()}: {message}", end=end)
+
 
 if __name__ == "__main__":
     vu = VersionUpdate()
@@ -237,15 +245,15 @@ if __name__ == "__main__":
     filename = os.path.basename(__file__)
 
     if len(args) != 1 or args[0] not in ["check", "upgrade"]:
-        print(f"\n{vu}")
-        print(f"USAGE: {filename} <check|upgrade>\n")
+        cprint(f"\n{vu}")
+        cprint(f"USAGE: {filename} <check|upgrade>\n")
         quit(2)
 
     if args[0] == "check":
-        print(f"\nInstalled Release : {vu.installed_version}")
-        print(f"Latest Release    : {vu.latest_version}")
+        cprint(f"\nInstalled Release : {vu.installed_version}")
+        cprint(f"Latest Release    : {vu.latest_version}")
         check = vu.latest_version != vu.installed_version
-        print(f"Update Available  : {check}\n")
+        cprint(f"Update Available  : {check}\n")
         vu.precheck()
 
     if args[0] == "upgrade":
