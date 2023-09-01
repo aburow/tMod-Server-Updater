@@ -71,7 +71,7 @@ Script to backup, deploy new version of tMod on existing installation
                                        Pulls old config from the previous install
 
       Version update will provide exit codes so that it can be included in automations and
-      additional scripts to for administrative tasks.
+      additional scripts for administrative tasks.
 
       Exit Codes
        0: Exit without error | no upgrade available | upgrade successful
