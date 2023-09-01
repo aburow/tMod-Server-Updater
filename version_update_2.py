@@ -11,12 +11,23 @@ class VersionUpdate:
         self.root_dir = "/root"
         self.installed_version = self.get_latest_version()
         self.latest_version = self.get_installed_version()
+        self.version_log_file = "version_update.json"
 
         self.data_dir = ".local/share/Terraria"
 
         self.image_url = ("https://github.com/tModLoader/tModLoader/releases/"
                           "latest")
         self.log_file = f"{self.root_dir}/tModLoader/tModLoader-Logs/server.log"
+
+        self.copy_config_files = [
+            f"tModLoader-v{self.installed_version}/boot_start.sh",
+            f"tModLoader-v{self.installed_version}/start.sh",
+            f"tModLoader-v{self.installed_version}/serverconfig.txt",
+        ]
+
+        self.move_config_files = [
+            "tModLoader/serverconfig.txt",
+        ]
 
     def get_latest_version(self) -> str:
         """Returns the latest version of tmodloader from the official Github
@@ -35,7 +46,7 @@ class VersionUpdate:
         version number.
         """
         try:
-            with open("version_update.json", "r") as vu:
+            with open(self.version_log_file, "r") as vu:
                 jvu = json.load(vu)
                 version = jvu.get("version")
                 if version is not None:
@@ -128,14 +139,35 @@ class VersionUpdate:
         result = shutil.unpack_archive(image_file, extract_dir)
         return result
 
-    @staticmethod
-    def deploy_startfiles() -> ...:
+    def deploy_startfiles(self) -> ...:
         """Redeploy config and startup shell files to new directory structure.
         """
-        image_file = "tModBootScripts.tgz"
-        result = shutil.unpack_archive(image_file)
+        for file in self.move_config_files:
+            try:
+                shutil.move(
+                    file, f"{file}.orig"
+                )
+            except (shutil.Error, FileNotFoundError) as e:
+                print(f"Error: {e}")
+                quit(69)
+            except Exception as e:
+                print(f"Unexpected error: {e}")
+                quit(69)
 
-        return result
+        for file in self.copy_config_files:
+            try:
+                shutil.copy(
+                    file, "/tModLoader"
+                )
+            except (shutil.Error, PermissionError) as e:
+                print(f"Error: {e}")
+                quit(69)
+            except Exception as e:
+                print(f"Unexpected error: {e}")
+                quit(69)
+
+        with open(self.version_log_file, "w") as vu:
+            json.dump({"version": self.installed_version}, vu)
 
     def precheck(self) -> bool:
         if self.latest_version == self.installed_version:
