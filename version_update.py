@@ -34,7 +34,7 @@ def get_latest_version() -> str:
     Calls are pointed to a redirection page at Github, a URL is passed back
     and the end of the URL gives the latest version number.
     """
-    r = requests.get(IMAGE_URL)
+    r = requests.get("https://github.com/tModLoader/tModLoader/releases/latest")
     return r.url.split("/v")[-1]  # last part is the version
 
 
