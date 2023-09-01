@@ -229,6 +229,9 @@ class VersionUpdate:
             sys.stdout.flush()
             cprint(self.deploy_startfiles())
             cprint("You can now reboot")
+        else:
+            print()
+            quit(0)
         print()
 
 def cprint(message: ..., end: str = None) -> None:
