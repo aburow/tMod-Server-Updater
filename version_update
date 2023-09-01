@@ -30,19 +30,19 @@ class VersionUpdate:
 
         self.root_dir = "/root"
         self.log_file = f"{self.root_dir}/tModLoader/tModLoader-Logs/server.log"
-        self.version_log_file = "tModLoader/version_update.json"
+        self.version_log_file = f"{self.root_dir}/tModLoader/version_update.json"
 
         self.installed_version = self.get_installed_version()
         self.latest_version = self.get_latest_version()
 
         self.copy_config_files = [
-            f"tModLoader-v{self.installed_version}/boot_start.sh",
-            f"tModLoader-v{self.installed_version}/start.sh",
-            f"tModLoader-v{self.installed_version}/serverconfig.txt",
+            f"{self.root_dir}/tModLoader-v{self.installed_version}/boot_start.sh",
+            f"{self.root_dir}/tModLoader-v{self.installed_version}/start.sh",
+            f"{self.root_dir}/tModLoader-v{self.installed_version}/serverconfig.txt",
         ]
 
         self.move_config_files = [
-            "tModLoader/serverconfig.txt",
+            f"{self.root_dir}/tModLoader/serverconfig.txt",
         ]
 
     def __str__(self):
@@ -135,7 +135,7 @@ class VersionUpdate:
     def make_new_dir() -> None:
         """Makes a new "tModLoader" directory.
         """
-        result = os.mkdir("tModLoader")
+        result = os.mkdir(f"{self.root_dir}/tModLoader")
         return result
 
     def get_latest_zip(self) -> str:
@@ -149,7 +149,7 @@ class VersionUpdate:
             f"v{self.latest_version}/tModLoader.zip")
         result = wget.download(
             image_file,
-            out=f"tModLoader/tModLoader-v{self.latest_version}.zip")
+            out=f"{self.root_dir}/tModLoader/tModLoader-v{self.latest_version}.zip")
         return result
 
     def server_setup(self) -> ...:
@@ -181,7 +181,7 @@ class VersionUpdate:
         for file in self.copy_config_files:
             try:
                 shutil.copy(
-                    file, "/tModLoader"
+                    file, f"{self.root_dir}/tModLoader"
                 )
             except (shutil.Error, PermissionError) as e:
                 print(f"Error: {e}")
