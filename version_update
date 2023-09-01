@@ -200,7 +200,7 @@ class VersionUpdate:
         quit(42)
 
     def main(self) -> None:
-        print(f"Latest Release    : {self.latest_version}")
+        print(f"\nLatest Release    : {self.latest_version}")
         print(f"Installed Release : {self.installed_version}")
         check = self.latest_version != self.installed_version
         print(f"Update Available  : {check}")
@@ -228,6 +228,7 @@ class VersionUpdate:
             sys.stdout.flush()
             print(self.deploy_startfiles())
             print("You can now reboot")
+        print()
 
 if __name__ == "__main__":
     vu = VersionUpdate()
@@ -241,7 +242,7 @@ if __name__ == "__main__":
         quit(2)
 
     if args[0] == "check":
-        print(f"Installed Release : {vu.installed_version}")
+        print(f"\nInstalled Release : {vu.installed_version}")
         print(f"Latest Release    : {vu.latest_version}")
         check = vu.latest_version != vu.installed_version
         print(f"Update Available  : {check}\n")
