@@ -203,7 +203,7 @@ class VersionUpdate:
         print(f"Latest Release    : {self.latest_version}")
         print(f"Installed Release : {self.installed_version}")
         check = self.latest_version != self.installed_version
-        print(f"Update Status     : {check}")
+        print(f"Update Available  : {check}")
         if check:
             print("Starting upgrade...")
             print("Backup Executables: ", end="")
@@ -244,7 +244,7 @@ if __name__ == "__main__":
         print(f"Installed Release : {vu.installed_version}")
         print(f"Latest Release    : {vu.latest_version}")
         check = vu.latest_version != vu.installed_version
-        print(f"Update Status     : {check}\n")
+        print(f"Update Available  : {check}\n")
         vu.precheck()
 
     if args[0] == "upgrade":
