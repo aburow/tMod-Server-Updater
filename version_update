@@ -1,0 +1,253 @@
+#!/usr/bin/python3
+# Automatically update tmod server v0.2 
+# 1 September 2023
+#
+# Anthony Burow - apburow at hotmail dot com
+# Alex Burow
+#
+# 
+# License: GPL3
+#
+# This program has a little bit of error checking
+# At this stage there are a couple of assumptions, all hardcoded.
+#
+
+import requests
+import wget
+import json
+import os
+import sys
+import shutil
+
+
+class VersionUpdate:
+    def __init__(self) -> None:
+        self.version = "0.2"
+        self.data_dir = ".local/share/Terraria"
+
+        self.image_url = ("https://github.com/tModLoader/tModLoader/releases/"
+                          "latest")
+
+        self.root_dir = "/root"
+        self.log_file = f"{self.root_dir}/tModLoader/tModLoader-Logs/server.log"
+        self.version_log_file = "tModLoader/version_update.json"
+
+        self.installed_version = self.get_installed_version()
+        self.latest_version = self.get_latest_version()
+
+        self.copy_config_files = [
+            f"tModLoader-v{self.installed_version}/boot_start.sh",
+            f"tModLoader-v{self.installed_version}/start.sh",
+            f"tModLoader-v{self.installed_version}/serverconfig.txt",
+        ]
+
+        self.move_config_files = [
+            "tModLoader/serverconfig.txt",
+        ]
+
+    def __str__(self):
+        return f"tMod Version Updater V{self.version}"
+
+    def get_latest_version(self) -> str:
+        """Returns the latest version of tmodloader from the official Github
+            releases page.
+
+        Calls are pointed to a redirection page at Github, a URL is passed back
+        and the end of the URL gives the latest version number.
+        """
+        r = requests.get(self.image_url)
+        return r.url.split("/v")[-1]
+
+    def get_installed_version(self) -> str:
+        """Returns the currently installed version of tmodloader.
+
+        This function looks at the first line of the logfile and extracts the
+        version number.
+        """
+
+        try:
+            with open(self.version_log_file, "r") as vu:
+                jvu = json.load(vu)
+                version = jvu.get("version")
+                if version is not None:
+                    return version
+
+        except FileNotFoundError:
+            print("version_update.json not found")
+
+        with open(self.log_file, "r") as f:
+            first_line = f.readline().strip("\n").split("+")
+            version_is = first_line[1].split("|")[0]
+
+        with open(self.version_log_file, "w") as vlf:
+            json.dump({"version": version_is}, vlf)
+
+        return version_is
+
+    def backup_execs(self) -> ...:
+        """Does a full backup of the current running server executables in-situ.
+
+        The backup can be restored directly back into the original directory or
+        copied to another server for deployment.
+
+        Returns:
+            Nothing intelligible at the moment. ahem I mean, not implemented.
+        """
+        shutil.make_archive(
+            f"./tMod-execs-{self.installed_version}",
+            "gztar",
+            f"{self.root_dir}/",
+            "tModLoader")
+        result = shutil.move(
+            f"./tMod-execs-{self.installed_version}.tar.gz",
+            "./backup")
+        return result
+
+    def backup_datafiles(self) -> ...:
+        """Does a full backup of the current servers data files, including maps and
+            plugins.
+
+        Returns:
+            Nothing intelligible at the moment. ahem I mean, not implemented.
+        """
+        shutil.make_archive(
+            f"./tMod-datafiles-{self.installed_version}",
+            "gztar",
+            f"{self.root_dir}/",
+            ".local/share/Terraria")
+        result = shutil.move(
+            f"./tMod-datafiles-{self.installed_version}.tar.gz",
+            "./backup")
+        return result
+
+    def move_current_dir(self) -> None:
+        """Renames the "tModLoader" directory to the format "tModLoader-v{
+            self.installed_version}"
+
+        Parameters:
+            version_number (str): The version number.
+        """
+        result = os.rename("tModLoader",
+                           f"tModLoader-v{self.installed_version}")
+        return result
+
+    @staticmethod
+    def make_new_dir() -> None:
+        """Makes a new "tModLoader" directory.
+        """
+        result = os.mkdir("tModLoader")
+        return result
+
+    def get_latest_zip(self) -> str:
+        """Gets the requested version of the tModLoader installation files.
+
+        Parameters:
+            version (str): The version that you want to download.
+        """
+        image_file = (
+            "https://github.com/tModLoader/tModLoader/releases/download/"
+            f"v{self.latest_version}/tModLoader.zip")
+        result = wget.download(
+            image_file,
+            out=f"tModLoader/tModLoader-v{self.latest_version}.zip")
+        return result
+
+    def server_setup(self) -> ...:
+        """Unpack the server distribution zip.
+
+        Precondition:
+            The version is already downloaded and in the expected location.
+        """
+        image_file = f"tModLoader/tModLoader-v{self.latest_version}.zip"
+        extract_dir = "/root/tModLoader"
+        result = shutil.unpack_archive(image_file, extract_dir)
+        return result
+
+    def deploy_startfiles(self) -> ...:
+        """Redeploy config and startup shell files to new directory structure.
+        """
+        for file in self.move_config_files:
+            try:
+                shutil.move(
+                    file, f"{file}.orig"
+                )
+            except (shutil.Error, FileNotFoundError) as e:
+                print(f"Error: {e}")
+                quit(69)
+            except Exception as e:
+                print(f"Unexpected error: {e}")
+                quit(69)
+
+        for file in self.copy_config_files:
+            try:
+                shutil.copy(
+                    file, "/tModLoader"
+                )
+            except (shutil.Error, PermissionError) as e:
+                print(f"Error: {e}")
+                quit(69)
+            except Exception as e:
+                print(f"Unexpected error: {e}")
+                quit(69)
+
+        self.installed_version = self.latest_version
+
+        with open(self.version_log_file, "w") as vu:
+            json.dump({"version": self.installed_version}, vu)
+
+    def precheck(self) -> bool:
+        if self.latest_version == self.installed_version:
+            quit(0)
+        quit(42)
+
+    def main(self) -> None:
+        print(f"Latest Release    : {self.latest_version}")
+        print(f"Installed Release : {self.installed_version}")
+        check = self.latest_version != self.installed_version
+        print(f"Update Status     : {check}")
+        if check:
+            print("Starting upgrade...")
+            print("Backup Executables: ", end="")
+            sys.stdout.flush()
+            print(self.backup_execs())
+            print("Backup Data Files : ", end="")
+            sys.stdout.flush()
+            print(self.backup_datafiles())
+            print("Move Current Inst.: ", end="")
+            sys.stdout.flush()
+            print(self.move_current_dir())
+            print("Prepare Directory :", end="")
+            sys.stdout.flush()
+            print(self.make_new_dir())
+            print("Retrieve File     : ", end="")
+            sys.stdout.flush()
+            print(self.get_latest_zip())
+            print("Unzip New Server  : ", end="")
+            sys.stdout.flush()
+            print(self.server_setup())
+            print("Deploy Start Files: ", end="")
+            sys.stdout.flush()
+            print(self.deploy_startfiles())
+            print("You can now reboot")
+
+if __name__ == "__main__":
+    vu = VersionUpdate()
+
+    args = sys.argv[1:]
+    filename = os.path.basename(__file__)
+
+    if len(args) != 1 or args[0] not in ["check", "upgrade"]:
+        print(f"\n{vu}")
+        print(f"USAGE: {filename} <check|upgrade>\n")
+        quit(2)
+
+    if args[0] == "check":
+        print(f"Installed Release : {vu.installed_version}")
+        print(f"Latest Release    : {vu.latest_version}")
+        check = vu.latest_version != vu.installed_version
+        print(f"Update Status     : {check}\n")
+        vu.precheck()
+
+    if args[0] == "upgrade":
+        vu.main()
+        quit(88)
