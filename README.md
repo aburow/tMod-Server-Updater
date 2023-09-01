@@ -1,7 +1,7 @@
 # tMod-Server-Update
 Script to backup, deploy new version of tMod on existing installation
 
-Installation/Requirements:
+      Installation/Requirements:
 
       We run the system in a protected container and these instructions are for
       the instances that we run but should work with any other system. You still
@@ -51,7 +51,7 @@ Installation/Requirements:
               Then add the following line to the bottom of the crontab file:
                   @reboot /root/tModLoader/boot_start.sh
 
-Install and Run the code:
+      Install and Run the code:
       Install "version_update" into the directory under tModServer. In containers
       this may well be /root/ make version_update executable with 'chmod +x version_update'
 
@@ -73,7 +73,7 @@ Install and Run the code:
       Version update will provide exit codes so that it can be included in automations and
       additional scripts to for administrative tasks.
 
-Exit Codes:
+      Exit Codes:
        0: Exit without error | no upgrade available | upgrade successful
        2: No parameters or valid commands
       42: New version available
