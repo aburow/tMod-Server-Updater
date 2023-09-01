@@ -131,8 +131,7 @@ class VersionUpdate:
                            f"tModLoader-v{self.installed_version}")
         return result
 
-    @staticmethod
-    def make_new_dir() -> None:
+    def make_new_dir(self) -> None:
         """Makes a new "tModLoader" directory.
         """
         result = os.mkdir(f"{self.root_dir}/tModLoader")
