@@ -1,4 +1,4 @@
-# tMod-Server-Update
+# tMod-Server-Updater
 Script to backup, deploy new version of tMod on existing installation
 
       Installation/Requirements:
