@@ -80,3 +80,27 @@ Script to backup, deploy new version of tMod on existing installation
       69: File move and copy errors detected
       88: Upgrade complete
 
+Example Output:
+
+    root@tMod2:~# ./vu check
+
+    Installed Release : 2023.08.3.0
+    Latest Release    : 2023.08.3.4
+    Update Available  : True
+    
+    root@tMod2:~# ./vu upgrade
+    
+    Latest Release    : 2023.08.3.4
+    Installed Release : 2023.08.3.0
+    Update Status     : True
+    Starting upgrade...
+    Backup Executables: ./backup/tMod-execs-2023.08.3.0.tar.gz
+    Backup Data Files : ./backup/tMod-datafiles-2023.08.3.0.tar.gz
+    Move Current Inst.: None
+    Prepare Directory :None
+    100% [........................................................................] 37461196 / 37461196/root/tModLoader/tModLoader-v2023.08.3.4.zip
+    Unzip New Server  : None
+    Deploy Start Files: None
+    You can now reboot
+
+    
