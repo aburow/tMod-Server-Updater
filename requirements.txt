@@ -4,7 +4,7 @@ command-not-found==0.3
 configparser==6.0.0
 idna==3.7
 PyMySQL==1.1.1
-requests==2.32.0
+requests==2.32.4
 shutils==0.1.0
 urllib3==2.2.2
 wget==3.2
