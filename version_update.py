@@ -4,7 +4,7 @@
 #
 # Anthony Burow - https://github.com/aburow
 # Alex Burow - https://github.com/Cheerfulmoss
-# 
+#
 #
 # License: GPL3
 #
@@ -26,8 +26,7 @@ class VersionUpdate:
         self.version = "0.2"
         self.data_dir = ".local/share/Terraria"
 
-        self.image_url = ("https://github.com/tModLoader/tModLoader/releases/"
-                          "latest")
+        self.image_url = "https://github.com/tModLoader/tModLoader/releases/latest"
 
         self.root_dir = "/root"
         self.log_file = f"{self.root_dir}/tModLoader/tModLoader-Logs/server.log"
@@ -98,10 +97,11 @@ class VersionUpdate:
             f"./tMod-execs-{self.installed_version}",
             "gztar",
             f"{self.root_dir}/",
-            "tModLoader")
+            "tModLoader",
+        )
         result = shutil.move(
-            f"./tMod-execs-{self.installed_version}.tar.gz",
-            "./backup")
+            f"./tMod-execs-{self.installed_version}.tar.gz", "./backup"
+        )
         return result
 
     def backup_datafiles(self) -> ...:
@@ -115,10 +115,11 @@ class VersionUpdate:
             f"./tMod-datafiles-{self.installed_version}",
             "gztar",
             f"{self.root_dir}/",
-            ".local/share/Terraria")
+            ".local/share/Terraria",
+        )
         result = shutil.move(
-            f"./tMod-datafiles-{self.installed_version}.tar.gz",
-            "./backup")
+            f"./tMod-datafiles-{self.installed_version}.tar.gz", "./backup"
+        )
         return result
 
     def move_current_dir(self) -> None:
@@ -128,13 +129,11 @@ class VersionUpdate:
         Parameters:
             version_number (str): The version number.
         """
-        result = os.rename("tModLoader",
-                           f"tModLoader-v{self.installed_version}")
+        result = os.rename("tModLoader", f"tModLoader-v{self.installed_version}")
         return result
 
     def make_new_dir(self) -> None:
-        """Makes a new "tModLoader" directory.
-        """
+        """Makes a new "tModLoader" directory."""
         result = os.mkdir(f"{self.root_dir}/tModLoader")
         return result
 
@@ -146,10 +145,12 @@ class VersionUpdate:
         """
         image_file = (
             "https://github.com/tModLoader/tModLoader/releases/download/"
-            f"v{self.latest_version}/tModLoader.zip")
+            f"v{self.latest_version}/tModLoader.zip"
+        )
         result = wget.download(
             image_file,
-            out=f"{self.root_dir}/tModLoader/tModLoader-v{self.latest_version}.zip")
+            out=f"{self.root_dir}/tModLoader/tModLoader-v{self.latest_version}.zip",
+        )
         return result
 
     def server_setup(self) -> ...:
@@ -164,31 +165,26 @@ class VersionUpdate:
         return result
 
     def deploy_startfiles(self) -> ...:
-        """Redeploy config and startup shell files to new directory structure.
-        """
+        """Redeploy config and startup shell files to new directory structure."""
         for file in self.move_config_files:
             try:
-                shutil.move(
-                    file, f"{file}.orig"
-                )
+                shutil.move(file, f"{file}.orig")
             except (shutil.Error, FileNotFoundError) as e:
                 cprint(f"Error: {e}")
                 quit(69)
             except Exception as e:
                 cprint(f"Unexpected error: {e}")
-                quit(69)
+                raise
 
         for file in self.copy_config_files:
             try:
-                shutil.copy(
-                    file, f"{self.root_dir}/tModLoader"
-                )
+                shutil.copy(file, f"{self.root_dir}/tModLoader")
             except (shutil.Error, PermissionError) as e:
                 cprint(f"Error: {e}")
                 quit(69)
             except Exception as e:
                 cprint(f"Unexpected error: {e}")
-                quit(69)
+                raise
 
         self.installed_version = self.latest_version
 
@@ -233,6 +229,7 @@ class VersionUpdate:
             print()
             quit(0)
         print()
+
 
 def cprint(message: ..., end: str = None) -> None:
     if end is None:

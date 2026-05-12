@@ -1,0 +1,17 @@
+rules:
+  - id: avoid-bare-except
+    patterns:
+      - pattern: |
+          except:
+            ...
+    message: "Avoid bare except; catch specific exception types."
+    severity: WARNING
+    languages: [python]
+
+  - id: avoid-print-in-library-code
+    patterns:
+      - pattern: print(...)
+      - pattern-not: print(f"{datetime.now()}: {message}")
+    message: "Avoid direct print() in library code; prefer structured logging."
+    severity: INFO
+    languages: [python]

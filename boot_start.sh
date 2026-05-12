@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Anthony Burow
-# 
+#
 # This file sets up tmux for tmod to run in the background on a virtual terminal
 # The file is meant to be called from crontab after every restart of an LXC
 #

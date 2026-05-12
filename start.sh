@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Anthony Burow
-# 
+#
 # This script does the following when called from 'boot_start.sh':
 #   1. Delays the start sequence to allow the booting LXC container to stabilise with all services ready. (15 sec default)
 #   2. makes all shell scripts unzipped from tModServer archive executable

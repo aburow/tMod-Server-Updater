@@ -1,106 +1,127 @@
 # tMod-Server-Updater
-Script to backup, deploy new version of tMod on existing installation
+Script to back up and deploy new versions of tModLoader on an existing installation.
 
-      Installation/Requirements:
+## Requirements
+- Python 3.11+
+- `tmux`
+- A working tModLoader server install under `/root/tModLoader`
+- Existing server logs at `/root/tModLoader/tModLoader-Logs/server.log`
 
-      We run the system in a protected container and these instructions are for
-      the instances that we run but should work with any other system. You still
-      need to do the setup for "serverconfig.txt" because we wrote this app for
-      our already running servers.
+Install `tmux`:
 
-      Start by doing some additional installs to prepare the environment.
+```bash
+apt-get install tmux
+```
 
-          apt-get install tmux
+Install runtime Python dependencies:
 
-          Install the following python libraries with:
-              pip3 install requests wget shutils
+```bash
+pip3 install -r requirements.txt
+```
 
-          create a directory /root/backup
+Create backup directory:
 
-          create boot_start.sh as follows in /root/tModLoader/
+```bash
+mkdir -p /root/backup
+```
 
-                    #!/bin/bash
-                    tmux new -d -s tmod
-                    tmux send-keys -t tmod:. "cd /root/tModLoader" C-m
-                    tmux send-keys -t tmod:. "./start.sh boot" C-m
+## Startup scripts
+Place these scripts in `/root/tModLoader/` and make them executable.
 
-          create start.sh as follows in /root/tModLoader/
+`boot_start.sh`
 
-                    #!/bin/bash
-                    if [[ $1 == "boot" ]]
-                    then
-                      sleep 15
-                    fi
-                    while :
-                    do
-                            cd /root/tModLoader
-                            chmod 755 *.sh
-                            ./start-tModLoaderServer.sh -nosteam -noupnp
-                            echo "Press [CTRL+C] to stop.."
-                            sleep 5
-                    done
+```bash
+#!/bin/bash
+tmux new -d -s tmod
+tmux send-keys -t tmod:. "cd /root/tModLoader" C-m
+tmux send-keys -t tmod:. "./start.sh boot" C-m
+```
 
-          After these 2 files are created, make the shellscipts in the directory
-          executable: 'chmod +x /root/tModLoader/*.sh'
+`start.sh`
 
-          To restart the tMod server automatically after reboot:
+```bash
+#!/bin/bash
+if [[ $1 == "boot" ]]; then
+  sleep 15
+fi
+while :
+do
+  cd /root/tModLoader
+  chmod 755 *.sh
+  ./start-tModLoaderServer.sh -nosteam -noupnp
+  echo "Press [CTRL+C] to stop.."
+  sleep 5
+done
+```
 
-              To edit crontab use the following:
-                  crontab -e
+Make shell scripts executable:
 
-              Then add the following line to the bottom of the crontab file:
-                  @reboot /root/tModLoader/boot_start.sh
+```bash
+chmod +x /root/tModLoader/*.sh
+```
 
-      Install and Run the code
-      Install "version_update" into the directory under tModServer. In containers
-      this may well be /root/ make version_update executable with 'chmod +x version_update'
+To restart automatically on reboot, add this crontab entry:
 
-      Before running the program the first time you MUST have a working tModLoaderServer
-      that is operating as the program gets the current version from the server logfiles.
-      
-      On the first run execute "version_update" without any parameters. This will provide
-      you with a usage output and will setup the version_upgrade.json file which to make version
-      tracking easier going forward. The first run will show an error above the usage information.
+```cron
+@reboot /root/tModLoader/boot_start.sh
+```
 
-      Currently there are only two commands available:
-      version_update check      :      Checks whether there is a new version of tModLoader
-                                       and outputs the results.
-      version_update upgrade    :      Check whether the installed version is same as current
-                                       Takes a backup of data and server files into ./backup
-                                       Creates a fresh install in ./tModLoader
-                                       Pulls old config from the previous install
+## Install and run updater
+Copy `version_update.py` to your target host (for example `/root/`) and make it executable:
 
-      Version update will provide exit codes so that it can be included in automations and
-      additional scripts for administrative tasks.
+```bash
+chmod +x version_update.py
+```
 
-      Exit Codes
-       0: Exit without error | no upgrade available 
-       2: No parameters or valid commands
-      42: New version available
-      69: File move and copy errors detected
-      88: Upgrade complete
+Run once with no valid command to confirm installation and create version tracking metadata:
 
-Example Output:
+```bash
+./version_update.py
+```
 
-    root@tMod2:~# ./vu check
+Commands:
 
-    Installed Release : 2023.08.3.0
-    Latest Release    : 2023.08.3.4
-    Update Available  : True
-    
-    root@tMod2:~# ./vu upgrade
-    
-    Latest Release    : 2023.08.3.4
-    Installed Release : 2023.08.3.0
-    Update Status     : True
-    Starting upgrade...
-    Backup Executables: ./backup/tMod-execs-2023.08.3.0.tar.gz
-    Backup Data Files : ./backup/tMod-datafiles-2023.08.3.0.tar.gz
-    Move Current Inst.: None
-    Prepare Directory :None
-    100% [........................................................................] 37461196 / 37461196/root/tModLoader/tModLoader-v2023.08.3.4.zip
-    Unzip New Server  : None
-    Deploy Start Files: None
-    You can now reboot
+```bash
+./version_update.py check
+./version_update.py upgrade
+```
 
-    
+Behavior:
+- `check`: prints installed/latest version and exits `0` (up-to-date) or `42` (update available)
+- `upgrade`: backs up executable/data files, installs latest release, restores config files
+
+Exit codes:
+- `0`: exit without error, no upgrade available
+- `2`: missing/invalid command
+- `42`: new version available
+- `69`: file move/copy errors detected
+- `88`: upgrade complete
+
+## Lint and quality checks
+This repo uses `pre-commit` with `uv` and a lint dependency group in `pyproject.toml`.
+
+Run full lint suite:
+
+```bash
+uv run --group lint pre-commit run --all-files
+```
+
+Run a specific file:
+
+```bash
+uv run --group lint pre-commit run --files version_update.py
+```
+
+Included checks:
+- `ruff`
+- `grain`
+- basic pre-commit hygiene hooks
+- `pytest` (when `tests/` exists)
+
+Manual-stage hooks are also configured for:
+- `shellcheck`
+- `shfmt`
+- `yamllint`
+- `sqlfluff`
+- `semgrep`
+- `codeql`
