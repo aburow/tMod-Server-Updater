@@ -25,7 +25,7 @@ export CODEQL_PACKAGES="$CODEQL_HOME/packages"
 if [ -d .git ]; then
   TMP_SOURCE_ROOT="$(mktemp -d /tmp/tmod-server-updater-codeql-src.XXXXXX)"
   trap 'rm -rf "$TMP_SOURCE_ROOT"' EXIT
-  cp -R version_update "$TMP_SOURCE_ROOT"/
+  cp -R version_update.py "$TMP_SOURCE_ROOT"/
   if [ -d tests ]; then
     cp -R tests "$TMP_SOURCE_ROOT"/
   fi

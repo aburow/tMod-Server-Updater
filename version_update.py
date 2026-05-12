@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-# Automatically update tmod server v0.2
+# Automatically update tmod server v0.2.1
 # 1 September 2023
 #
 # Anthony Burow - https://github.com/aburow
@@ -23,7 +23,7 @@ from datetime import datetime
 
 class VersionUpdate:
     def __init__(self) -> None:
-        self.version = "0.2"
+        self.version = "0.2.1"
         self.data_dir = ".local/share/Terraria"
 
         self.image_url = "https://github.com/tModLoader/tModLoader/releases/latest"
